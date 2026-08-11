@@ -12,7 +12,9 @@ readme = "README.md"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
-  "discord.py"
+  "discord.py",
+  "kubernetes",
+  "python-dotenv"
 ]
 authors = [
   {name = "Dominik Łukasiewicz", email = "lukasiewiczd090@gmail.com"}
