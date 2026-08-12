@@ -27,3 +27,7 @@ dev = [
     "pytest",
     "pre-commit"
 ]
+
+[[tool.mypy.overrides]]
+module = "kubernetes.*"
+ignore_missing_imports = true
