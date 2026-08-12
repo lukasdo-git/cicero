@@ -2,10 +2,6 @@
 
 A Discord bot for managing a homelab k3s cluster — inspect pods, restart deployments, scale replicas, and audit every action, all from Discord slash commands.
 
-## Why
-
-Most ChatOps tutorials wrap Slack around scripts. This project goes lower-level: a Discord bot backed directly by the Kubernetes Python client, running with its own scoped ServiceAccount and RBAC inside the cluster it manages — not an admin kubeconfig mounted in as a shortcut.
-
 ## Stack
 
 - [discord.py](https://discordpy.readthedocs.io/)
