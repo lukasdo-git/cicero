@@ -34,6 +34,6 @@ cp .env.example .env   # fill in DISCORD_TOKEN and DISCORD_GUILD_ID
 
 ## CI
 
-[![CI](https://github.com/lukasdo-git/cicero/actions/workflows/CI.yml/badge.svg)](https://github.com/lukasdo-git/cicero/actions/workflows/CI.yml)
+[![CI](https://github.com/lukasdo-git/cicero/actions/workflows/CI.yml/badge.svg?event=push)](https://github.com/lukasdo-git/cicero/actions/workflows/CI.yml)
 
 Every push runs `ruff check`, `ruff format --check`, `mypy`, and `pytest`.
