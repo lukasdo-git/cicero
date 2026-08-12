@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 @dataclass
 class Config:
     discord_token: str
-    discord_guild_id: int | None
+    discord_guild_id: int
     kubeconfig_path: str | None
 
     @classmethod
@@ -18,9 +18,11 @@ class Config:
         if not discord_token:
             raise RuntimeError("Environment variable 'DISCORD_TOKEN' is not set")
 
-        discord_guild_id = (
-            int(guild_id) if (guild_id := os.getenv("DISCORD_GUILD_ID")) else None
-        )
+        raw_guild_id = os.getenv("DISCORD_GUILD_ID")
+        if not raw_guild_id:
+            raise RuntimeError("Environment variable 'DISCORD_GUILD_ID' is not set")
+        discord_guild_id = int(raw_guild_id)
+
         kubeconfig_path = os.getenv("KUBECONFIG_PATH") or None
 
         return cls(

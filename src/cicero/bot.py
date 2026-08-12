@@ -13,7 +13,9 @@ class CiceroBot(commands.Bot):
 
     async def setup_hook(self) -> None:
         await self.load_extension("cicero.cogs.status")
-        await self.tree.sync(guild=discord.Object(id=self.guild_id))
+        guild = discord.Object(id=self.guild_id)
+        self.tree.copy_global_to(guild=guild)
+        await self.tree.sync(guild=guild)
 
     async def on_ready(self) -> None:
         assert self.user is not None

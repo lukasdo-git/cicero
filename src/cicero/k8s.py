@@ -50,7 +50,7 @@ def _summarize_pods(pods: list) -> PodSummary:
     for pod in pods:
         phase = pod.status.phase
         by_phase[phase] = by_phase.get(phase, 0) + 1
-        if phase != "Running":
+        if phase not in ("Running", "Succeeded"):
             unhealthy.append(f"{pod.metadata.namespace}/{pod.metadata.name}")
     return PodSummary(total=total, by_phase=by_phase, unhealthy=unhealthy)
 
