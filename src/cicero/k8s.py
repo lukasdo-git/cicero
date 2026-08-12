@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 from kubernetes import client, config
 
-from .config import Config
+from cicero.config import Config
 
 
 def load_config(kubeconfig_path: str | None) -> None:
