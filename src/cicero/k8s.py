@@ -1,0 +1,63 @@
+from dataclasses import dataclass
+
+from kubernetes import client, config
+
+from .config import Config
+
+
+def load_config(kubeconfig_path: str | None) -> None:
+    try:
+        config.load_incluster_config()
+    except config.ConfigException:
+        config.load_kube_config(config_file=kubeconfig_path)
+
+
+@dataclass
+class NodeStatus:
+    name: str
+    ready: bool
+
+
+@dataclass
+class PodSummary:
+    total: int
+    by_phase: dict[str, int]
+    unhealthy: list[str]
+
+
+load_config(Config.from_env().kubeconfig_path)
+api = client.CoreV1Api()
+
+
+def get_node_statuses(api: client.CoreV1Api) -> list[NodeStatus]:
+    nodes = api.list_node().items
+    return [
+        NodeStatus(
+            name=node.metadata.name,
+            ready=any(
+                condition.type == "Ready" and condition.status == "True"
+                for condition in node.status.conditions
+            ),
+        )
+        for node in nodes
+    ]
+
+
+def _summarize_pods(pods: list) -> PodSummary:
+    total = len(pods)
+    by_phase: dict[str, int] = {}
+    unhealthy: list[str] = []
+    for pod in pods:
+        phase = pod.status.phase
+        by_phase[phase] = by_phase.get(phase, 0) + 1
+        if phase != "Running":
+            unhealthy.append(f"{pod.metadata.namespace}/{pod.metadata.name}")
+    return PodSummary(total=total, by_phase=by_phase, unhealthy=unhealthy)
+
+
+def get_pod_summary(api: client.CoreV1Api) -> PodSummary:
+    return _summarize_pods(api.list_pod_for_all_namespaces().items)
+
+
+def get_pod_summary_by_namespace(api: client.CoreV1Api, namespace: str) -> PodSummary:
+    return _summarize_pods(api.list_namespaced_pod(namespace=namespace).items)
