@@ -12,7 +12,7 @@ A Discord bot for managing a homelab k3s cluster — inspect pods, restart deplo
 ## Roadmap
 
 - [x] **M0** — Repo & tooling scaffolding
-- [ ] **M1** — Bot skeleton + `/status`
+- [x] **M1** — Bot skeleton + `/status`
 - [ ] **M2** — Read-only inspection (`/pods`, `/describe`, `/logs`, `/nodes`)
 - [ ] **M3** — Role-based access control
 - [ ] **M4** — Control commands (`/restart`, `/scale`)
