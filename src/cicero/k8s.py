@@ -1,3 +1,4 @@
+import datetime
 from dataclasses import dataclass
 
 from kubernetes import client, config
@@ -32,13 +33,27 @@ class NodeDetails:
     memory_capacity: str
 
 
+@dataclass
+class PodDetails:
+    name: str
+    namespace: str
+    phase: str
+    ready: bool
+    restarts: int
+    creation_timestamp: datetime.datetime
+
+
 def get_node_statuses(api: client.CoreV1Api) -> list[NodeStatus]:
     return [
         NodeStatus(name=node.name, ready=node.ready) for node in get_node_details(api)
     ]
 
 
-def _summarize_pods(pods: list) -> PodSummary:
+def get_pod_summary(api: client.CoreV1Api, namespace: str | None = None) -> PodSummary:
+    if namespace is None:
+        pods = api.list_pod_for_all_namespaces().items
+    else:
+        pods = api.list_namespaced_pod(namespace).items
     total = len(pods)
     by_phase: dict[str, int] = {}
     unhealthy: list[str] = []
@@ -48,10 +63,6 @@ def _summarize_pods(pods: list) -> PodSummary:
         if phase not in ("Running", "Succeeded"):
             unhealthy.append(f"{pod.metadata.namespace}/{pod.metadata.name}")
     return PodSummary(total=total, by_phase=by_phase, unhealthy=unhealthy)
-
-
-def get_pod_summary(api: client.CoreV1Api) -> PodSummary:
-    return _summarize_pods(api.list_pod_for_all_namespaces().items)
 
 
 def get_node_details(api: client.CoreV1Api) -> list[NodeDetails]:
@@ -68,4 +79,32 @@ def get_node_details(api: client.CoreV1Api) -> list[NodeDetails]:
             memory_capacity=node.status.capacity.get("memory", "unknown"),
         )
         for node in nodes
+    ]
+
+
+def get_pod_details(
+    api: client.CoreV1Api, namespace: str | None = None
+) -> list[PodDetails]:
+    if namespace is None:
+        pods = api.list_pod_for_all_namespaces().items
+    else:
+        pods = api.list_namespaced_pod(namespace).items
+    return [
+        PodDetails(
+            name=pod.metadata.name,
+            namespace=pod.metadata.namespace,
+            phase=pod.status.phase,
+            ready=any(
+                c.type == "Ready" and c.status == "True" for c in pod.status.conditions
+            )
+            if pod.status.conditions
+            else False,
+            restarts=sum(
+                container.restart_count for container in pod.status.container_statuses
+            )
+            if pod.status.container_statuses
+            else 0,
+            creation_timestamp=pod.metadata.creation_timestamp,
+        )
+        for pod in pods
     ]

@@ -21,7 +21,7 @@ A Discord bot for managing a homelab k3s cluster — inspect pods, restart deplo
 - [ ] **M7** — CI/CD hardening, optional `k3d` integration tests
 
 ## Getting started
-
+For development:
 ```powershell
 git clone git@github.com:lukasdo-git/cicero.git
 cd cicero
@@ -30,7 +30,10 @@ python -m venv .venv
 pip install -e ".[dev]"
 pre-commit install
 cp .env.example .env   # fill in DISCORD_TOKEN and DISCORD_GUILD_ID
+python -m cicero #to run the bot
 ```
+For production use:
+TBD
 
 ## CI
 
