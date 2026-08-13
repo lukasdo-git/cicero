@@ -2,8 +2,6 @@ from dataclasses import dataclass
 
 from kubernetes import client, config
 
-from cicero.config import Config
-
 
 def load_config(kubeconfig_path: str | None) -> None:
     try:
@@ -25,8 +23,13 @@ class PodSummary:
     unhealthy: list[str]
 
 
-load_config(Config.from_env().kubeconfig_path)
-api = client.CoreV1Api()
+@dataclass
+class NodeDetails:
+    name: str
+    ready: bool
+    kubelet_version: str
+    cpu_capacity: str
+    memory_capacity: str
 
 
 def get_node_statuses(api: client.CoreV1Api) -> list[NodeStatus]:
@@ -59,5 +62,18 @@ def get_pod_summary(api: client.CoreV1Api) -> PodSummary:
     return _summarize_pods(api.list_pod_for_all_namespaces().items)
 
 
-def get_pod_summary_by_namespace(api: client.CoreV1Api, namespace: str) -> PodSummary:
-    return _summarize_pods(api.list_namespaced_pod(namespace=namespace).items)
+def get_node_details(api: client.CoreV1Api) -> list[NodeDetails]:
+    nodes = api.list_node().items
+    return [
+        NodeDetails(
+            name=node.metadata.name,
+            ready=any(
+                condition.type == "Ready" and condition.status == "True"
+                for condition in node.status.conditions
+            ),
+            kubelet_version=node.status.node_info.kubelet_version,
+            cpu_capacity=node.status.capacity.get("cpu", "unknown"),
+            memory_capacity=node.status.capacity.get("memory", "unknown"),
+        )
+        for node in nodes
+    ]
