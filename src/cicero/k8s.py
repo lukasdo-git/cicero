@@ -33,16 +33,8 @@ class NodeDetails:
 
 
 def get_node_statuses(api: client.CoreV1Api) -> list[NodeStatus]:
-    nodes = api.list_node().items
     return [
-        NodeStatus(
-            name=node.metadata.name,
-            ready=any(
-                condition.type == "Ready" and condition.status == "True"
-                for condition in node.status.conditions
-            ),
-        )
-        for node in nodes
+        NodeStatus(name=node.name, ready=node.ready) for node in get_node_details(api)
     ]
 
 
